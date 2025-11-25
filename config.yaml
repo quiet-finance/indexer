@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: envio-indexer
+networks:
+- id: 11155111
+  start_block: 0
+  contracts:
+  - name: LiquidityHub
+    address:
+    - 0x8f42B6CfDa09668E2c9cbd997d8da7eA4490D504
+    handler: src/EventHandlers.ts
+    events:
+    - event: RebalanceFinished(uint256 navBeforeRebalance, uint256 newNav)
+  - name: sqUSD
+    address:
+    - 0x71F9244a5E41586e718F55cb2f1303c8D3971c4d
+    handler: src/EventHandlers.ts
+    events:
+    - event: Transfer(address indexed from, address indexed to, uint256 amount)
+unordered_multichain_mode: true
+preload_handlers: true

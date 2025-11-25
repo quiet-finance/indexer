@@ -1,0 +1,20 @@
+type Rebalance {
+  id: ID!
+  timestamp: Int!
+  oldNav: BigInt!
+  newNav: BigInt!
+  totalShares: BigInt!
+}
+
+type SharesBalanceSnapshot {
+  id: ID!
+  timestamp: Int!
+  address: String!
+  amount: BigInt!
+}
+
+type SharesBalance {
+  id: ID!
+  updated_at: Int!
+  amount: BigInt!
+}
