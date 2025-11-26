@@ -1,6 +1,6 @@
 type Rebalance {
   id: ID!
-  timestamp: Int!
+  timestamp: Int! @index
   oldNav: BigInt!
   newNav: BigInt!
   totalShares: BigInt!
@@ -8,8 +8,8 @@ type Rebalance {
 
 type ShareBalanceSnapshot {
   id: ID!
-  timestamp: Int!
-  address: String!
+  timestamp: Int! @index
+  address: String! @index
   amount: BigInt!
 }
 
