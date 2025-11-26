@@ -4,7 +4,7 @@ import {
   SqUSD,
   EventLog
 } from "generated";
-import { getTotalShares } from "./sqUSDStats";
+import { getTotalShares } from "./shareStats";
 import { getAddress, zeroAddress } from "viem";
 
 const makeId = (event: EventLog<{}>) => `${event.chainId}_${event.block.number}_${event.logIndex}`
@@ -33,13 +33,13 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
 SqUSD.Transfer.handler(async ({ event, context }) => {
   const fromAddress = getAddress(event.params.from);
   if (fromAddress !== zeroAddress) {
-    const fromBalance = await context.SharesBalance.get(fromAddress);
-    context.SharesBalance.set({
+    const fromBalance = await context.ShareBalance.get(fromAddress);
+    context.ShareBalance.set({
       id: fromAddress,
       updated_at: event.block.timestamp,
       amount: (fromBalance?.amount ?? 0n) - event.params.amount
     })
-    context.SharesBalanceSnapshot.set({
+    context.ShareBalanceSnapshot.set({
       id: makeId(event),
       address: fromAddress,
       timestamp: event.block.timestamp,
@@ -49,13 +49,13 @@ SqUSD.Transfer.handler(async ({ event, context }) => {
 
   const toAddress = getAddress(event.params.to);
   if (toAddress !== zeroAddress) {
-    const toBalance = await context.SharesBalance.get(toAddress);
-    context.SharesBalance.set({
+    const toBalance = await context.ShareBalance.get(toAddress);
+    context.ShareBalance.set({
       id: toAddress,
       updated_at: event.block.timestamp,
       amount: (toBalance?.amount ?? 0n) + event.params.amount
     })
-    context.SharesBalanceSnapshot.set({
+    context.ShareBalanceSnapshot.set({
       id: makeId(event),
       address: toAddress,
       timestamp: event.block.timestamp,

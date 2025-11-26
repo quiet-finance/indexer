@@ -6,14 +6,14 @@ type Rebalance {
   totalShares: BigInt!
 }
 
-type SharesBalanceSnapshot {
+type ShareBalanceSnapshot {
   id: ID!
   timestamp: Int!
   address: String!
   amount: BigInt!
 }
 
-type SharesBalance {
+type ShareBalance {
   id: ID!
   updated_at: Int!
   amount: BigInt!
