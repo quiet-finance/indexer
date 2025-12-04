@@ -1,6 +1,6 @@
 type Rebalance {
   id: ID!
-  timestamp: Timestamp! @index
+  timestamp: Int! @index
   oldNav: BigInt!
   newNav: BigInt!
   totalShares: BigInt!
@@ -8,14 +8,14 @@ type Rebalance {
 
 type ShareBalanceSnapshot {
   id: ID!
-  timestamp: Timestamp! @index
+  timestamp: Int! @index
   address: String! @index
   amount: BigInt!
 }
 
 type ShareBalance {
   id: ID!
-  updatedAt: Timestamp!
+  updatedAt: Int!
   amount: BigInt!
 }
 
@@ -31,7 +31,7 @@ type Action {
   id: ID!
   address: String! @index
   actionType: ActionType!
-  timestamp: Timestamp!
+  timestamp: Int!
   txHash: String!
   tokenIn: String!
   amountIn: BigInt!
@@ -49,7 +49,7 @@ type RedeemQueue {
 
 type RedeemRequest {
   id: ID!
-  requestedAt: Timestamp!
+  requestedAt: Int!
   requestTxHash: String!
   redeemer: String!
   recipient: String! @index

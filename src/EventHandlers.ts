@@ -37,7 +37,7 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
 
   const entity: Rebalance = {
     id: makeId(event),
-    timestamp: new Date(event.block.timestamp),
+    timestamp: event.block.timestamp,
     oldNav: event.params.navBeforeRebalance,
     newNav: event.params.newNav,
     totalShares,
@@ -53,7 +53,7 @@ LiquidityHub.Issue.handler(async ({ event, context }) => {
     id: makeId(event),
     address: event.params.recipient,
     actionType: "ISSUE",
-    timestamp: new Date(event.block.timestamp),
+    timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn,
     amountIn: event.params.assetAmount,
@@ -67,7 +67,7 @@ LiquidityHub.InstantRedeem.handler(async ({ event, context }) => {
     id: makeId(event),
     address: event.params.recipient,
     actionType: "INSTANT_REDEEM",
-    timestamp: new Date(event.block.timestamp),
+    timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn: qUSD.address,
     amountIn: event.params.receiptAmount,
@@ -86,7 +86,7 @@ LiquidityHub.RedeemRequest.handler(async ({ event, context }) => {
   });
   context.RedeemRequest.set({
     id: `${event.params.requestId}`,
-    requestedAt: new Date(event.block.timestamp),
+    requestedAt: event.block.timestamp,
     requestTxHash: event.transaction.hash,
     redeemer: event.params.redeemer,
     recipient: event.params.recipient,
@@ -104,7 +104,7 @@ LiquidityHub.Redeem.handler(async ({ event, context }) => {
     id: makeId(event),
     address: event.params.recipient,
     actionType: "REDEEM",
-    timestamp: new Date(event.block.timestamp),
+    timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn: qUSD.address,
     amountIn: asReceiptAmount(event.params.assetAmount),
@@ -128,13 +128,13 @@ SqUSD.Transfer.handler(async ({ event, context }) => {
     const fromBalance = await context.ShareBalance.get(fromAddress);
     context.ShareBalance.set({
       id: fromAddress,
-      updatedAt: new Date(event.block.timestamp),
+      updatedAt: event.block.timestamp,
       amount: (fromBalance?.amount ?? 0n) - event.params.amount
     });
     context.ShareBalanceSnapshot.set({
       id: makeId(event),
       address: fromAddress,
-      timestamp: new Date(event.block.timestamp),
+      timestamp: event.block.timestamp,
       amount: (fromBalance?.amount ?? 0n) - event.params.amount
     });
   }
@@ -144,13 +144,13 @@ SqUSD.Transfer.handler(async ({ event, context }) => {
     const toBalance = await context.ShareBalance.get(toAddress);
     context.ShareBalance.set({
       id: toAddress,
-      updatedAt: new Date(event.block.timestamp),
+      updatedAt: event.block.timestamp,
       amount: (toBalance?.amount ?? 0n) + event.params.amount
     });
     context.ShareBalanceSnapshot.set({
       id: makeId(event),
       address: toAddress,
-      timestamp: new Date(event.block.timestamp),
+      timestamp: event.block.timestamp,
       amount: (toBalance?.amount ?? 0n) + event.params.amount
     });
   }
@@ -161,7 +161,7 @@ SqUSD.Deposit.handler(async ({ event, context }) => {
     id: makeId(event),
     address: event.params.owner,
     actionType: "STAKE",
-    timestamp: new Date(event.block.timestamp),
+    timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn: qUSD.address,
     amountIn: event.params.assets,
@@ -175,7 +175,7 @@ SqUSD.Withdraw.handler(async ({ event, context }) => {
     id: makeId(event),
     address: event.params.owner,
     actionType: "UNSTAKE",
-    timestamp: new Date(event.block.timestamp),
+    timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn: sqUSD.address,
     amountIn: event.params.assets,
