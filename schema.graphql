@@ -1,6 +1,6 @@
 type Rebalance {
   id: ID!
-  timestamp: Int! @index
+  timestamp: Timestamp! @index
   oldNav: BigInt!
   newNav: BigInt!
   totalShares: BigInt!
@@ -8,13 +8,51 @@ type Rebalance {
 
 type ShareBalanceSnapshot {
   id: ID!
-  timestamp: Int! @index
+  timestamp: Timestamp! @index
   address: String! @index
   amount: BigInt!
 }
 
 type ShareBalance {
   id: ID!
-  updated_at: Int!
+  updatedAt: Timestamp!
   amount: BigInt!
+}
+
+enum ActionType {
+      ISSUE
+      REDEEM
+      INSTANT_REDEEM
+      STAKE
+      UNSTAKE
+}
+
+type Action {
+  id: ID!
+  address: String! @index
+  actionType: ActionType!
+  timestamp: Timestamp!
+  txHash: String!
+  tokenIn: String!
+  amountIn: BigInt!
+  tokenOut: String!
+  amountOut: BigInt!
+}
+
+type RedeemQueue {
+  id: ID!
+  requestsTotal: Int!
+  requestsProcessed: Int!
+  amountTotal: BigInt!
+  amountProcessed: BigInt!
+}
+
+type RedeemRequest {
+  id: ID!
+  requestedAt: Timestamp!
+  requestTxHash: String!
+  redeemer: String!
+  recipient: String! @index
+  amount: BigInt!
+  isProcessed: Boolean! @index
 }
