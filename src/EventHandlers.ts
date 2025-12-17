@@ -2,7 +2,8 @@ import {
   LiquidityHub,
   Rebalance,
   SqUSD,
-  EventLog
+  EventLog,
+  Router
 } from "generated";
 import { getTotalShares } from "./shareStats";
 import { getAddress, zeroAddress } from "viem";
@@ -182,4 +183,32 @@ SqUSD.Withdraw.handler(async ({ event, context }) => {
     tokenOut: qUSD.address,
     amountOut: event.params.shares,
   });
+})
+
+Router.Deposit.handler(async ({ event, context }) => {
+  if (!event.params.staked) return;
+
+  const id = `${event.block.number}-${event.transaction.transactionIndex}-${event.logIndex - 4}`
+  const action = await context.Action.getOrThrow(id)
+
+  console.log(action)
+  context.Action.set({
+    ...action,
+    address: event.params.user
+  })
+  context.Action.deleteUnsafe(makeId(event))
+})
+
+Router.Withdraw.handler(async ({ event, context }) => {
+  if (!event.params.unstaked) return;
+
+  const id = `${event.block.number}-${event.transaction.transactionIndex}-${event.logIndex - 5}`
+  const action = await context.Action.getOrThrow(id)
+
+  console.log(action)
+  context.Action.set({
+    ...action,
+    address: event.params.user
+  })
+  context.Action.deleteUnsafe(makeId(event))
 })

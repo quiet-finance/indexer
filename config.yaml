@@ -22,6 +22,14 @@ networks:
     - event: Transfer(address indexed from, address indexed to, uint256 amount)
     - event: Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)
     - event: Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets,uint256 shares)
+  - name: Router
+    address:
+    - 0xa20B586C8EE93cEaA955Fa8F3aFA9D3FB2aB14B1
+    handler: src/EventHandlers.ts
+    events:
+    - event: Deposit(address user, bool staked)
+    - event: Withdraw(address user, bool unstaked, bool instant)
+
 field_selection:
   transaction_fields:
     - transactionIndex
