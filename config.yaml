@@ -9,8 +9,8 @@ networks:
     - 0x9Bb4F457694B4ce51f765795677f6A5eEaB6fC9E
     handler: src/EventHandlers.ts
     events:
-    - event: RebalanceStarted(uint256 deployedAssets);
-    - event: RebalanceFinished(uint256 deployedAssets)
+    - event: RebalanceStarted(uint256 deployedUnderlying)
+    - event: RebalanceFinished(uint256 deployedUnderlying)
     - event: Issue(address indexed issuer, address indexed recipient, uint256 underlyingAmount, uint256 assetAmount)
     - event: InstantRedeem(address indexed redeemer, address indexed recipient, uint256 assetAmount, uint256 underlyingAmount)
     - event: RedeemRequest(uint256 requestId, address indexed redeemer, address indexed recipient, uint256 assetAmount)

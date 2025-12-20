@@ -2,9 +2,9 @@ type Rebalance {
   id: ID!
   timestamp: Int @index
   startRebalanceTxHash: String!
-  deployedAssetsBefore: BigInt!
+  deployedUnderlyingBefore: BigInt!
   endRebalanceTxHash: String
-  deployedAssetsAfter: BigInt
+  deployedUnderlyingAfter: BigInt
   totalShares: BigInt
 }
 

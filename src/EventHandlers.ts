@@ -28,9 +28,9 @@ LiquidityHub.RebalanceStarted.handler(async ({ event, context }) => {
   context.Rebalance.set({
     id: STARTED_REBALANCE_ID,
     timestamp: undefined,
-    deployedAssetsBefore: event.params.deployedAssets,
+    deployedUnderlyingBefore: event.params.deployedUnderlying,
     startRebalanceTxHash: event.transaction.hash,
-    deployedAssetsAfter: undefined,
+    deployedUnderlyingAfter: undefined,
     endRebalanceTxHash: undefined,
     totalShares: undefined,
   });
@@ -44,7 +44,7 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
     ...startedRebalance,
     id: makeId(event),
     timestamp: event.block.timestamp,
-    deployedAssetsAfter: event.params.deployedAssets,
+    deployedUnderlyingAfter: event.params.deployedUnderlying,
     endRebalanceTxHash: event.transaction.hash,
     totalShares,
   })
