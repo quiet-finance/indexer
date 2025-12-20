@@ -1,9 +1,11 @@
 type Rebalance {
   id: ID!
-  timestamp: Int! @index
-  oldNav: BigInt!
-  newNav: BigInt!
-  totalShares: BigInt!
+  timestamp: Int @index
+  startRebalanceTxHash: String!
+  deployedAssetsBefore: BigInt!
+  endRebalanceTxHash: String
+  deployedAssetsAfter: BigInt
+  totalShares: BigInt
 }
 
 type ShareBalanceSnapshot {
@@ -41,10 +43,10 @@ type Action {
 
 type RedeemQueue {
   id: ID!
-  requestsTotal: Int!
-  requestsProcessed: Int!
-  amountTotal: BigInt!
-  amountProcessed: BigInt!
+  redeemsCount: Int!
+  processedRedeemsCount: Int!
+  redeemAssets: BigInt!
+  processedRedeemAssets: BigInt!
 }
 
 type RedeemRequest {

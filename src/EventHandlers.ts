@@ -11,39 +11,43 @@ import { USDC, qUSD, sqUSD } from "./contracts";
 import { HandlerContext } from "generated/src/Types";
 
 const REDEEM_QUEUE_ID = "REDEEM_QUEUE_ID"
+const STARTED_REBALANCE_ID = "STARTED_REBALANCE_ID"
 
 const makeId = (event: EventLog<{}>) => `${event.block.number}-${event.transaction.transactionIndex}-${event.logIndex}`
-
-const asReceiptAmount = (assetAmount: bigint) => assetAmount * (10n ** 12n);
+const asAssetAmount = (underlyingAmount: bigint) => underlyingAmount * (10n ** 12n);
 
 const getOrCreateRedeemQueue = async (context: HandlerContext) => await context.RedeemQueue.getOrCreate({
   id: REDEEM_QUEUE_ID,
-  requestsTotal: 0,
-  requestsProcessed: 0,
-  amountTotal: 0n,
-  amountProcessed: 0n,
+  redeemsCount: 0,
+  processedRedeemsCount: 0,
+  redeemAssets: 0n,
+  processedRedeemAssets: 0n,
 });
 
+LiquidityHub.RebalanceStarted.handler(async ({ event, context }) => {
+  context.Rebalance.set({
+    id: STARTED_REBALANCE_ID,
+    timestamp: undefined,
+    deployedAssetsBefore: event.params.deployedAssets,
+    startRebalanceTxHash: event.transaction.hash,
+    deployedAssetsAfter: undefined,
+    endRebalanceTxHash: undefined,
+    totalShares: undefined,
+  });
+});
 
 LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
-  let totalShares;
-  try {
-    totalShares = await context.effect(getTotalShares, { blockNumber: BigInt(event.block.number) });
-  } catch (error) {
-    context.log.error("Failed to fetch total shares", {
-      err: error,
-    });
-    return;
-  }
+  const totalShares = await context.effect(getTotalShares, { blockNumber: BigInt(event.block.number) });
+  const startedRebalance = await context.Rebalance.getOrThrow(STARTED_REBALANCE_ID);
 
-  const entity: Rebalance = {
+  context.Rebalance.set({
+    ...startedRebalance,
     id: makeId(event),
     timestamp: event.block.timestamp,
-    oldNav: event.params.navBeforeRebalance,
-    newNav: event.params.newNav,
+    deployedAssetsAfter: event.params.deployedAssets,
+    endRebalanceTxHash: event.transaction.hash,
     totalShares,
-  };
-  context.Rebalance.set(entity);
+  })
 });
 
 LiquidityHub.Issue.handler(async ({ event, context }) => {
@@ -57,9 +61,9 @@ LiquidityHub.Issue.handler(async ({ event, context }) => {
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn,
-    amountIn: event.params.assetAmount,
+    amountIn: event.params.underlyingAmount,
     tokenOut: qUSD.address,
-    amountOut: event.params.receiptAmount,
+    amountOut: event.params.assetAmount,
   });
 })
 
@@ -71,9 +75,9 @@ LiquidityHub.InstantRedeem.handler(async ({ event, context }) => {
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn: qUSD.address,
-    amountIn: event.params.receiptAmount,
+    amountIn: event.params.assetAmount,
     tokenOut: USDC.address,
-    amountOut: event.params.assetAmount,
+    amountOut: event.params.underlyingAmount,
   });
 })
 
@@ -82,8 +86,8 @@ LiquidityHub.RedeemRequest.handler(async ({ event, context }) => {
 
   context.RedeemQueue.set({
     ...redeemQueue,
-    requestsTotal: redeemQueue.requestsTotal + 1,
-    amountTotal: redeemQueue.amountTotal + event.params.receiptAmount
+    redeemsCount: redeemQueue.redeemsCount + 1,
+    redeemAssets: redeemQueue.redeemAssets + event.params.assetAmount
   });
   context.RedeemRequest.set({
     id: `${event.params.requestId}`,
@@ -91,7 +95,7 @@ LiquidityHub.RedeemRequest.handler(async ({ event, context }) => {
     requestTxHash: event.transaction.hash,
     redeemer: event.params.redeemer,
     recipient: event.params.recipient,
-    amount: event.params.receiptAmount,
+    amount: event.params.assetAmount,
     isProcessed: false
   });
 })
@@ -108,14 +112,14 @@ LiquidityHub.Redeem.handler(async ({ event, context }) => {
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     tokenIn: qUSD.address,
-    amountIn: asReceiptAmount(event.params.assetAmount),
+    amountIn: asAssetAmount(event.params.underlyingAmount),
     tokenOut: USDC.address,
-    amountOut: event.params.assetAmount,
+    amountOut: event.params.underlyingAmount,
   });
   context.RedeemQueue.set({
     ...redeemQueue,
-    requestsProcessed: redeemQueue.requestsProcessed + 1,
-    amountProcessed: redeemQueue.amountProcessed + asReceiptAmount(event.params.assetAmount)
+    processedRedeemsCount: redeemQueue.processedRedeemsCount + 1,
+    processedRedeemAssets: redeemQueue.processedRedeemAssets + asAssetAmount(event.params.underlyingAmount)
   });
   context.RedeemRequest.set({
     ...redeemRequest,
@@ -191,7 +195,6 @@ Router.Deposit.handler(async ({ event, context }) => {
   const id = `${event.block.number}-${event.transaction.transactionIndex}-${event.logIndex - 4}`
   const action = await context.Action.getOrThrow(id)
 
-  console.log(action)
   context.Action.set({
     ...action,
     address: event.params.user
@@ -201,11 +204,11 @@ Router.Deposit.handler(async ({ event, context }) => {
 
 Router.Withdraw.handler(async ({ event, context }) => {
   if (!event.params.unstaked) return;
+  const unstakeIndex = event.logIndex - (event.params.instant ? 5 : 3)
 
-  const id = `${event.block.number}-${event.transaction.transactionIndex}-${event.logIndex - 5}`
+  const id = `${event.block.number}-${event.transaction.transactionIndex}-${unstakeIndex}`
   const action = await context.Action.getOrThrow(id)
 
-  console.log(action)
   context.Action.set({
     ...action,
     address: event.params.user

@@ -15,12 +15,12 @@ export const USDC = getContract({
 
 export const qUSD = getContract({
     abi: erc20Abi,
-    address: "0xB497C6e264Eb62f6Cc41eBE7c860678A3F198e6b",
+    address: "0x32465584456b7E254353f32AAD48c3B2246C4d35",
     client,
 })
 
 export const sqUSD = getContract({
     abi: erc4626Abi,
-    address: "0x16b0191DB14c73f1133a5D4C23127318Fe9a7852",
+    address: "0x551061Ff21D5AbfcB323175A4fb6Cc5d3efF15fC",
     client,
 });
