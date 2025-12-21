@@ -19,9 +19,10 @@ const asAssetAmount = (underlyingAmount: bigint) => underlyingAmount * (10n ** 1
 const getOrCreateRedeemQueue = async (context: HandlerContext) => await context.RedeemQueue.getOrCreate({
   id: REDEEM_QUEUE_ID,
   redeemsCount: 0,
-  processedRedeemsCount: 0,
+  claimedRedeemsCount: 0,
   redeemAssets: 0n,
-  processedRedeemAssets: 0n,
+  claimedRedeemAssets: 0n,
+  processedRedeemsCount: 0
 });
 
 LiquidityHub.RebalanceStarted.handler(async ({ event, context }) => {
@@ -90,20 +91,20 @@ LiquidityHub.RedeemRequest.handler(async ({ event, context }) => {
     redeemAssets: redeemQueue.redeemAssets + event.params.assetAmount
   });
   context.RedeemRequest.set({
-    id: `${event.params.requestId}`,
+    id: `${event.params.redeemId}`,
     requestedAt: event.block.timestamp,
     requestTxHash: event.transaction.hash,
     redeemer: event.params.redeemer,
     recipient: event.params.recipient,
-    amount: event.params.assetAmount,
+    assetAmount: event.params.assetAmount,
     isProcessed: false
   });
 })
 
 
-LiquidityHub.Redeem.handler(async ({ event, context }) => {
+LiquidityHub.RedeemClaim.handler(async ({ event, context }) => {
   const redeemQueue = await getOrCreateRedeemQueue(context);
-  const redeemRequest = await context.RedeemRequest.getOrThrow(`${event.params.requestId}`)
+  const redeemRequest = await context.RedeemRequest.getOrThrow(`${event.params.redeemId}`)
 
   context.Action.set({
     id: makeId(event),
@@ -118,13 +119,22 @@ LiquidityHub.Redeem.handler(async ({ event, context }) => {
   });
   context.RedeemQueue.set({
     ...redeemQueue,
-    processedRedeemsCount: redeemQueue.processedRedeemsCount + 1,
-    processedRedeemAssets: redeemQueue.processedRedeemAssets + asAssetAmount(event.params.underlyingAmount)
+    claimedRedeemsCount: redeemQueue.claimedRedeemsCount + 1,
+    claimedRedeemAssets: redeemQueue.claimedRedeemAssets + redeemRequest.assetAmount
   });
   context.RedeemRequest.set({
     ...redeemRequest,
     isProcessed: true,
   })
+})
+
+LiquidityHub.RedeemsProcessed.handler(async ({ event, context }) => {
+  const redeemQueue = await getOrCreateRedeemQueue(context);
+
+  context.RedeemQueue.set({
+    ...redeemQueue,
+    processedRedeemsCount: Number(event.params.lastProcessedRedeemId)
+  });
 })
 
 SqUSD.Transfer.handler(async ({ event, context }) => {

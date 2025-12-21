@@ -44,9 +44,10 @@ type Action {
 type RedeemQueue {
   id: ID!
   redeemsCount: Int!
-  processedRedeemsCount: Int!
+  claimedRedeemsCount: Int!
   redeemAssets: BigInt!
-  processedRedeemAssets: BigInt!
+  claimedRedeemAssets: BigInt!
+  processedRedeemsCount: Int!
 }
 
 type RedeemRequest {
@@ -55,6 +56,6 @@ type RedeemRequest {
   requestTxHash: String!
   redeemer: String!
   recipient: String! @index
-  amount: BigInt!
+  assetAmount: BigInt!
   isProcessed: Boolean! @index
 }
