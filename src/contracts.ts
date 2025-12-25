@@ -1,26 +1,36 @@
-import { createPublicClient, http, getContract, erc4626Abi, erc20Abi } from "viem";
+import { createPublicClient, http, getContract, erc4626Abi, erc20Abi, parseAbi } from "viem";
 import { sepolia } from "viem/chains";
 
 const client = createPublicClient({
     chain: sepolia,
-    batch: { multicall: true }, // Enable multicall batching for efficiency
-    transport: http(undefined, { batch: true }), // Thanks to automatic Effect API batching, we can also enable batching for Viem transport level
+    batch: { multicall: true },
+    transport: http(undefined, { batch: true }),
 });
+
+export const liquidityHub = getContract({
+    abi: parseAbi([
+        "function underlying() external view returns (address)",
+        "function asset() external view returns (address)",
+        "function vault() external view returns (address)",
+    ]),
+    address: "0xEe1047a2CEDb1aFc42ECd088DCBAAcD9f06529B4",
+    client,
+})
 
 export const USDC = getContract({
     abi: erc20Abi,
-    address: "0xf55B2Ab657147E94B228A2575483Ea3C73C88275",
+    address: await liquidityHub.read.underlying(),
     client,
 })
 
 export const qUSD = getContract({
     abi: erc20Abi,
-    address: "0x9581F368680aa05EBaA187022154eB055C808ad5",
+    address: await liquidityHub.read.asset(),
     client,
 })
 
 export const sqUSD = getContract({
     abi: erc4626Abi,
-    address: "0x4aBeD8353213656fda42406b9dA3d9CC3951Ae18",
+    address: await liquidityHub.read.vault(),
     client,
 });

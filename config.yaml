@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
-name: envio-indexer
-networks:
+name: quiet-finance-testnet
+chains:
 - id: 11155111
   start_block: 0
   contracts:
@@ -36,5 +36,3 @@ field_selection:
   transaction_fields:
     - transactionIndex
     - hash
-unordered_multichain_mode: true
-preload_handlers: true

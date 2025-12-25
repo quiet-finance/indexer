@@ -1,14 +1,13 @@
 import {
   LiquidityHub,
-  Rebalance,
   SqUSD,
-  EventLog,
+  type EventLog,
   Router
 } from "generated";
 import { getTotalShares } from "./shareStats";
 import { getAddress, zeroAddress } from "viem";
 import { USDC, qUSD, sqUSD } from "./contracts";
-import { HandlerContext } from "generated/src/Types";
+import type { HandlerContext } from "generated/src/Types";
 
 const REDEEM_QUEUE_ID = "REDEEM_QUEUE_ID"
 const STARTED_REBALANCE_ID = "STARTED_REBALANCE_ID"
