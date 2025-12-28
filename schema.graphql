@@ -6,6 +6,7 @@ type Rebalance {
   endRebalanceTxHash: String
   deployedUnderlyingAfter: BigInt
   totalShares: BigInt
+  stakedAssets: BigInt
 }
 
 type ShareBalanceSnapshot {
@@ -13,12 +14,14 @@ type ShareBalanceSnapshot {
   timestamp: Int! @index
   address: String! @index
   amount: BigInt!
+  holdingStreakSeconds: Int!
 }
 
 type ShareBalance {
   id: ID!
   updatedAt: Int!
   amount: BigInt!
+  holdingStreakSeconds: Int!
 }
 
 enum ActionType {

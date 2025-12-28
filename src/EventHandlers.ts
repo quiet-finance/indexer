@@ -4,7 +4,7 @@ import {
   type EventLog,
   Router
 } from "generated";
-import { getTotalShares } from "./shareStats";
+import { getVaultStats } from "./effects";
 import { getAddress, zeroAddress } from "viem";
 import { USDC, qUSD, sqUSD } from "./contracts";
 import type { HandlerContext } from "generated/src/Types";
@@ -33,11 +33,12 @@ LiquidityHub.RebalanceStarted.handler(async ({ event, context }) => {
     deployedUnderlyingAfter: undefined,
     endRebalanceTxHash: undefined,
     totalShares: undefined,
+    stakedAssets: undefined,
   });
 });
 
 LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
-  const totalShares = await context.effect(getTotalShares, { blockNumber: BigInt(event.block.number) });
+  const { stakedAssets, totalShares } = await context.effect(getVaultStats, { blockNumber: BigInt(event.block.number) });
   const startedRebalance = await context.Rebalance.getOrThrow(STARTED_REBALANCE_ID);
 
   context.Rebalance.set({
@@ -46,6 +47,7 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
     timestamp: event.block.timestamp,
     deployedUnderlyingAfter: event.params.deployedUnderlying,
     endRebalanceTxHash: event.transaction.hash,
+    stakedAssets,
     totalShares,
   })
 });
@@ -139,33 +141,55 @@ LiquidityHub.RedeemsProcessed.handler(async ({ event, context }) => {
 SqUSD.Transfer.handler(async ({ event, context }) => {
   const fromAddress = getAddress(event.params.from);
   if (fromAddress !== zeroAddress) {
-    const fromBalance = await context.ShareBalance.get(fromAddress);
+    const fromBalance = await context.ShareBalance.getOrCreate({
+      id: fromAddress,
+      updatedAt: event.block.timestamp,
+      amount: 0n,
+      holdingStreakSeconds: 0
+    });
+    const amount = fromBalance.amount - event.params.amount;
+    const holdingStreakSeconds = amount > 0
+      ? fromBalance.holdingStreakSeconds + event.block.timestamp - fromBalance.updatedAt
+      : 0;
     context.ShareBalance.set({
       id: fromAddress,
       updatedAt: event.block.timestamp,
-      amount: (fromBalance?.amount ?? 0n) - event.params.amount
+      amount,
+      holdingStreakSeconds,
     });
     context.ShareBalanceSnapshot.set({
       id: makeId(event),
       address: fromAddress,
       timestamp: event.block.timestamp,
-      amount: (fromBalance?.amount ?? 0n) - event.params.amount
+      amount,
+      holdingStreakSeconds,
     });
   }
 
   const toAddress = getAddress(event.params.to);
   if (toAddress !== zeroAddress) {
-    const toBalance = await context.ShareBalance.get(toAddress);
+    const toBalance = await context.ShareBalance.getOrCreate({
+      id: toAddress,
+      updatedAt: event.block.timestamp,
+      amount: 0n,
+      holdingStreakSeconds: 0
+    });
+    const amount = toBalance.amount + event.params.amount;
+    const holdingStreakSeconds = amount > 0
+      ? toBalance.holdingStreakSeconds + event.block.timestamp - toBalance.updatedAt
+      : 0;
     context.ShareBalance.set({
       id: toAddress,
       updatedAt: event.block.timestamp,
-      amount: (toBalance?.amount ?? 0n) + event.params.amount
+      amount,
+      holdingStreakSeconds,
     });
     context.ShareBalanceSnapshot.set({
       id: makeId(event),
       address: toAddress,
       timestamp: event.block.timestamp,
-      amount: (toBalance?.amount ?? 0n) + event.params.amount
+      amount,
+      holdingStreakSeconds
     });
   }
 });
