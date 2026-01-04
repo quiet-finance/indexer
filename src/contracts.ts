@@ -14,7 +14,7 @@ export const liquidityHub = getContract({
         "function asset() external view returns (address)",
         "function vault() external view returns (address)",
     ]),
-    address: "0xEe1047a2CEDb1aFc42ECd088DCBAAcD9f06529B4",
+    address: "0xF1f46532C08E8Fe1fd431Fe15f8a206b1838EE12",
     client,
 })
 
