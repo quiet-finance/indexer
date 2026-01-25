@@ -77,3 +77,14 @@ type RedeemRequest {
   assetAmount: BigInt!
   isProcessed: Boolean! @index
 }
+
+type Stats {
+  id: ID!
+  tvl: BigInt!
+}
+
+type TvlSnapshotDaily {
+  id: ID!
+  timestamp: Int! @index
+  amount: BigInt!
+}

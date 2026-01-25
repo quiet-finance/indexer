@@ -11,6 +11,7 @@ import type { HandlerContext } from "generated/src/Types";
 import { QUSD } from "generated";
 
 const REDEEM_QUEUE_ID = "REDEEM_QUEUE_ID"
+const STATS_ID = "STATS_ID"
 const STARTED_REBALANCE_ID = "STARTED_REBALANCE_ID"
 
 const makeId = (event: EventLog<{}>) => `${event.block.number}-${event.transaction.transactionIndex}-${event.logIndex}`
@@ -24,6 +25,10 @@ const getOrCreateRedeemQueue = async (context: HandlerContext) => await context.
   claimedRedeemAssets: 0n,
   processedRedeemsCount: 0
 });
+const getOrCreateStats = async (context: HandlerContext) => await context.Stats.getOrCreate({
+  id: STATS_ID,
+  tvl: 0n,
+})
 
 LiquidityHub.RebalanceStarted.handler(async ({ event, context }) => {
   context.Rebalance.set({
@@ -196,6 +201,9 @@ SqUSD.Transfer.handler(async ({ event, context }) => {
 });
 
 QUSD.Transfer.handler(async ({ event, context }) => {
+  const stats = await getOrCreateStats(context);
+  let tvlDelta = 0n;
+
   const fromAddress = getAddress(event.params.from);
   if (fromAddress !== zeroAddress) {
     const fromBalance = await context.AssetBalance.getOrCreate({
@@ -221,6 +229,8 @@ QUSD.Transfer.handler(async ({ event, context }) => {
       amount,
       holdingStreakSeconds,
     });
+  } else {
+    tvlDelta += event.params.amount;
   }
 
   const toAddress = getAddress(event.params.to);
@@ -248,6 +258,20 @@ QUSD.Transfer.handler(async ({ event, context }) => {
       amount,
       holdingStreakSeconds
     });
+  } else {
+    tvlDelta -= event.params.amount;
+  }
+
+  if (tvlDelta !== 0n) {
+    context.Stats.set({
+      id: STATS_ID,
+      tvl: stats.tvl + tvlDelta,
+    })
+    context.TvlSnapshotDaily.set({
+      id: makeId(event),
+      timestamp: event.block.timestamp,
+      amount: stats.tvl + tvlDelta,
+    })
   }
 });
 
