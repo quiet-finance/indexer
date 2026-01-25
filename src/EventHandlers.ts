@@ -8,6 +8,7 @@ import { getVaultStats } from "./effects";
 import { getAddress, zeroAddress } from "viem";
 import { USDC, qUSD, sqUSD } from "./contracts";
 import type { HandlerContext } from "generated/src/Types";
+import { QUSD } from "generated";
 
 const REDEEM_QUEUE_ID = "REDEEM_QUEUE_ID"
 const STARTED_REBALANCE_ID = "STARTED_REBALANCE_ID"
@@ -148,7 +149,7 @@ SqUSD.Transfer.handler(async ({ event, context }) => {
       holdingStreakSeconds: 0
     });
     const amount = fromBalance.amount - event.params.amount;
-    const holdingStreakSeconds = amount > 0
+    const holdingStreakSeconds = fromBalance.amount > 0
       ? fromBalance.holdingStreakSeconds + event.block.timestamp - fromBalance.updatedAt
       : 0;
     context.ShareBalance.set({
@@ -175,7 +176,7 @@ SqUSD.Transfer.handler(async ({ event, context }) => {
       holdingStreakSeconds: 0
     });
     const amount = toBalance.amount + event.params.amount;
-    const holdingStreakSeconds = amount > 0
+    const holdingStreakSeconds = toBalance.amount > 0
       ? toBalance.holdingStreakSeconds + event.block.timestamp - toBalance.updatedAt
       : 0;
     context.ShareBalance.set({
@@ -185,6 +186,62 @@ SqUSD.Transfer.handler(async ({ event, context }) => {
       holdingStreakSeconds,
     });
     context.ShareBalanceSnapshot.set({
+      id: makeId(event),
+      address: toAddress,
+      timestamp: event.block.timestamp,
+      amount,
+      holdingStreakSeconds
+    });
+  }
+});
+
+QUSD.Transfer.handler(async ({ event, context }) => {
+  const fromAddress = getAddress(event.params.from);
+  if (fromAddress !== zeroAddress) {
+    const fromBalance = await context.AssetBalance.getOrCreate({
+      id: fromAddress,
+      updatedAt: event.block.timestamp,
+      amount: 0n,
+      holdingStreakSeconds: 0
+    });
+    const amount = fromBalance.amount - event.params.amount;
+    const holdingStreakSeconds = fromBalance.amount > 0
+      ? fromBalance.holdingStreakSeconds + event.block.timestamp - fromBalance.updatedAt
+      : 0;
+    context.AssetBalance.set({
+      id: fromAddress,
+      updatedAt: event.block.timestamp,
+      amount,
+      holdingStreakSeconds,
+    });
+    context.AssetBalanceSnapshot.set({
+      id: makeId(event),
+      address: fromAddress,
+      timestamp: event.block.timestamp,
+      amount,
+      holdingStreakSeconds,
+    });
+  }
+
+  const toAddress = getAddress(event.params.to);
+  if (toAddress !== zeroAddress) {
+    const toBalance = await context.AssetBalance.getOrCreate({
+      id: toAddress,
+      updatedAt: event.block.timestamp,
+      amount: 0n,
+      holdingStreakSeconds: 0
+    });
+    const amount = toBalance.amount + event.params.amount;
+    const holdingStreakSeconds = toBalance.amount > 0
+      ? toBalance.holdingStreakSeconds + event.block.timestamp - toBalance.updatedAt
+      : 0;
+    context.AssetBalance.set({
+      id: toAddress,
+      updatedAt: event.block.timestamp,
+      amount,
+      holdingStreakSeconds,
+    });
+    context.AssetBalanceSnapshot.set({
       id: makeId(event),
       address: toAddress,
       timestamp: event.block.timestamp,

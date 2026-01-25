@@ -16,6 +16,14 @@ chains:
     - event: InstantRedeem(address indexed redeemer, address indexed recipient, uint256 assetAmount, uint256 underlyingAmount)
     - event: RedeemRequest(uint256 redeemId, address indexed redeemer, address indexed recipient, uint256 assetAmount)
     - event: RedeemClaim(uint256 redeemId, address indexed recipient, uint256 underlyingAmount)
+  - name: qUSD
+    address:
+    - 0xC692F4639c80293BfD3A11a6BEf2801544B0275b
+    handler: src/EventHandlers.ts
+    events:
+    - event: Transfer(address indexed from, address indexed to, uint256 amount)
+    - event: Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)
+    - event: Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets,uint256 shares)
   - name: sqUSD
     address:
     - 0x7dFF203a2D7A18691742bdbF35202741b9503a65
@@ -27,6 +35,7 @@ chains:
   - name: Router
     address:
     - 0x18835d03F61c4CB978e497Ff156798C123A00381
+    - 0x2CB48D7975700b8eCce7228024B368D5571F2551
     handler: src/EventHandlers.ts
     events:
     - event: Deposit(address user, bool staked)

@@ -24,6 +24,21 @@ type ShareBalance {
   holdingStreakSeconds: Int!
 }
 
+type AssetBalanceSnapshot {
+  id: ID!
+  timestamp: Int! @index
+  address: String! @index
+  amount: BigInt!
+  holdingStreakSeconds: Int!
+}
+
+type AssetBalance {
+  id: ID!
+  updatedAt: Int!
+  amount: BigInt!
+  holdingStreakSeconds: Int!
+}
+
 enum ActionType {
       ISSUE
       REDEEM
