@@ -1,6 +1,7 @@
 import { createEffect, S } from "envio";
-import { client, qUSD, sqUSD } from "./contracts";
+import { client, sqUSD } from "./contracts";
 import { multicall } from "viem/actions";
+import { BigDecimal } from "generated";
 
 export const getVaultStats = createEffect(
     {
@@ -9,8 +10,8 @@ export const getVaultStats = createEffect(
             blockNumber: S.bigint,
         },
         output: {
-            stakedAssets: S.bigint,
-            totalShares: S.bigint,
+            stakedAssets: S.bigDecimal,
+            totalShares: S.bigDecimal,
         },
         cache: true,
         rateLimit: {
@@ -21,7 +22,7 @@ export const getVaultStats = createEffect(
     async ({ input }) => {
         const { blockNumber } = input;
 
-        const [stakedAssets, totalShares] = await multicall(client, {
+        const [totalAssets, totalSupply] = await multicall(client, {
             contracts: [
                 { ...sqUSD, functionName: "totalAssets" },
                 { ...sqUSD, functionName: "totalSupply" },
@@ -30,6 +31,11 @@ export const getVaultStats = createEffect(
             allowFailure: false,
         });
 
-        return { stakedAssets, totalShares }
+        const denom = new BigDecimal(10).pow(18);
+
+        return {
+            stakedAssets: new BigDecimal(totalAssets.toString()).div(denom),
+            totalShares: new BigDecimal(totalSupply.toString()).div(denom),
+        }
     }
 );

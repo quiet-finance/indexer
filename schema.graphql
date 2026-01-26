@@ -1,42 +1,38 @@
+type Wallet {
+  id: ID!
+
+  assetBalance: AssetBalanceSnapshot
+  assetBalanceShanpshots: [AssetBalanceSnapshot!]! @derivedFrom(field: "wallet")
+
+  shareBalance: ShareBalanceSnapshot
+  shareBalanceShanpshots: [ShareBalanceSnapshot!]! @derivedFrom(field: "wallet")
+
+  actions: [Action!]! @derivedFrom(field: "wallet")
+}
+
 type Rebalance {
   id: ID!
-  timestamp: Int @index
-  startRebalanceTxHash: String!
-  deployedUnderlyingBefore: BigInt!
-  endRebalanceTxHash: String
-  deployedUnderlyingAfter: BigInt
-  totalShares: BigInt
-  stakedAssets: BigInt
+  timestamp: Int! @index
+  txHash: String!
+  totalShares: BigDecimal! @config(precision: 78, scale: 18)
+  stakedAssets: BigDecimal! @config(precision: 78, scale: 18)
+  prevRebalance: Rebalance
 }
 
 type ShareBalanceSnapshot {
   id: ID!
   timestamp: Int! @index
-  address: String! @index
-  amount: BigInt!
-  holdingStreakSeconds: Int!
-}
-
-type ShareBalance {
-  id: ID!
-  updatedAt: Int!
-  amount: BigInt!
-  holdingStreakSeconds: Int!
+  wallet: Wallet! @index
+  amount: BigDecimal! @config(precision: 78, scale: 18)
+  holdingStreak: Int!
 }
 
 type AssetBalanceSnapshot {
   id: ID!
   timestamp: Int! @index
-  address: String! @index
-  amount: BigInt!
-  holdingStreakSeconds: Int!
-}
-
-type AssetBalance {
-  id: ID!
-  updatedAt: Int!
-  amount: BigInt!
-  holdingStreakSeconds: Int!
+  wallet: Wallet! @index
+  amount: BigDecimal! @config(precision: 78, scale: 18)
+  holdingStreak: Int!
 }
 
 enum ActionType {
@@ -49,22 +45,22 @@ enum ActionType {
 
 type Action {
   id: ID!
-  address: String! @index
+  wallet: Wallet! @index
   actionType: ActionType!
   timestamp: Int!
   txHash: String!
   tokenIn: String!
-  amountIn: BigInt!
+  amountIn: BigDecimal! @config(precision: 78, scale: 18)
   tokenOut: String!
-  amountOut: BigInt!
+  amountOut: BigDecimal! @config(precision: 78, scale: 18)
 }
 
 type RedeemQueue {
   id: ID!
   redeemsCount: Int!
   claimedRedeemsCount: Int!
-  redeemAssets: BigInt!
-  claimedRedeemAssets: BigInt!
+  redeemAssets: BigDecimal! @config(precision: 78, scale: 18)
+  claimedRedeemAssets: BigDecimal! @config(precision: 78, scale: 18)
   processedRedeemsCount: Int!
 }
 
@@ -72,19 +68,20 @@ type RedeemRequest {
   id: ID!
   requestedAt: Int!
   requestTxHash: String!
-  redeemer: String!
-  recipient: String! @index
-  assetAmount: BigInt!
+  redeemer: Wallet!
+  recipient: Wallet! @index
+  assetAmount: BigDecimal! @config(precision: 78, scale: 18)
   isProcessed: Boolean! @index
 }
 
 type Stats {
   id: ID!
-  tvl: BigInt!
+  tvl: TvlSnapshot
+  lastRebalance: Rebalance
 }
 
-type TvlSnapshotDaily {
+type TvlSnapshot {
   id: ID!
   timestamp: Int! @index
-  amount: BigInt!
+  amount: BigDecimal! @config(precision: 78, scale: 18)
 }
