@@ -89,7 +89,7 @@ LiquidityHub.RedeemRequest.handler(async ({ event, context }) => {
     redeemer_id: event.params.redeemer,
     recipient_id: event.params.recipient,
     assetAmount: parseQusdAmount(event.params.assetAmount),
-    isProcessed: false
+    isClaimed: false
   });
 })
 
@@ -116,7 +116,7 @@ LiquidityHub.RedeemClaim.handler(async ({ event, context }) => {
   });
   context.RedeemRequest.set({
     ...redeemRequest,
-    isProcessed: true,
+    isClaimed: true,
   })
 })
 
@@ -131,10 +131,10 @@ LiquidityHub.RedeemsProcessed.handler(async ({ event, context }) => {
 
 SqUSD.Transfer.handler(async ({ event, context }) => {
   if (event.params.from !== zeroAddress) {
-    await changeShareBalance(context, event, event.params.from, -event.params.amount);
+    await changeShareBalance(context, event, event.params.from, parseSqusdAmount(event.params.amount).negated());
   }
   if (event.params.to !== zeroAddress) {
-    await changeShareBalance(context, event, event.params.to, event.params.amount);
+    await changeShareBalance(context, event, event.params.to, parseSqusdAmount(event.params.amount));
   }
 });
 

@@ -8,6 +8,7 @@ type Wallet {
   shareBalanceShanpshots: [ShareBalanceSnapshot!]! @derivedFrom(field: "wallet")
 
   actions: [Action!]! @derivedFrom(field: "wallet")
+  redeemRequests: [RedeemRequest!]! @derivedFrom(field: "recipient")
 }
 
 type Rebalance {
@@ -71,7 +72,7 @@ type RedeemRequest {
   redeemer: Wallet!
   recipient: Wallet! @index
   assetAmount: BigDecimal! @config(precision: 78, scale: 18)
-  isProcessed: Boolean! @index
+  isClaimed: Boolean! @index
 }
 
 type Stats {

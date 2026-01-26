@@ -17,11 +17,11 @@ export const changeShareBalance = async (
     context: HandlerContext,
     event: EventLog<{}>,
     address: Address,
-    delta: bigint,
+    delta: BigDecimal,
 ) => {
     const wallet = await getOrCreateWallet(context, address);
 
-    let amount: BigDecimal = new BigDecimal(delta.toString()).div(DECIMALS_18)
+    let amount: BigDecimal = delta;
     let holdingStreak: number = 0;
     if (wallet.shareBalance_id !== undefined) {
         const shareBalance = await context.ShareBalanceSnapshot.getOrThrow(wallet.shareBalance_id);
@@ -31,18 +31,15 @@ export const changeShareBalance = async (
             : 0;
     }
 
+    const shareBalance_id = `${makeId(event)}:${address}`
     context.ShareBalanceSnapshot.set({
-        id: makeId(event),
-        wallet_id: wallet.id,
+        id: shareBalance_id,
+        wallet_id: address,
         timestamp: event.block.timestamp,
         amount,
         holdingStreak,
     });
-
-    context.Wallet.set({
-        ...wallet,
-        shareBalance_id: makeId(event),
-    });
+    context.Wallet.set({ ...wallet, shareBalance_id });
 }
 
 export const changeAssetBalance = async (
@@ -63,16 +60,13 @@ export const changeAssetBalance = async (
             : 0;
     }
 
+    const assetBalance_id = `${makeId(event)}:${address}`
     context.AssetBalanceSnapshot.set({
-        id: makeId(event),
+        id: assetBalance_id,
         wallet_id: wallet.id,
         timestamp: event.block.timestamp,
         amount,
         holdingStreak,
     });
-
-    context.Wallet.set({
-        ...wallet,
-        assetBalance_id: makeId(event),
-    });
+    context.Wallet.set({ ...wallet, assetBalance_id });
 }
