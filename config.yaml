@@ -9,6 +9,7 @@ chains:
     - 0xF1f46532C08E8Fe1fd431Fe15f8a206b1838EE12
     handler: src/EventHandlers.ts
     events:
+    - event: RebalanceStarted(uint256 deployedUnderlying)
     - event: RebalanceFinished(uint256 deployedUnderlying)
     - event: RedeemsProcessed(uint256 lastProcessedRedeemId)
     - event: Issue(address indexed issuer, address indexed recipient, uint256 underlyingAmount, uint256 assetAmount)

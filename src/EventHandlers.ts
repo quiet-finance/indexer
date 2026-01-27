@@ -24,9 +24,20 @@ const getOrCreateRedeemQueue = async (context: HandlerContext) => await context.
   processedRedeemsCount: 0
 });
 
+const REBALANCE_IN_PROGRESS_ID = "REBALANCE_IN_PROGRESS_ID"
+
+LiquidityHub.RebalanceStarted.handler(async ({ event, context }) => {
+  context.RebalanceInProgress.set({
+    id: REBALANCE_IN_PROGRESS_ID,
+    deployedUnderlyingBefore: parseUsdcAmount(event.params.deployedUnderlying),
+  });
+});
+
 LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
   const { stakedAssets, totalShares } = await context.effect(getVaultStats, { blockNumber: BigInt(event.block.number) });
   const stats = await getOrCreateStats(context);
+  const rebalanceInProgress = await context.RebalanceInProgress.getOrThrow(REBALANCE_IN_PROGRESS_ID);
+  context.RebalanceInProgress.deleteUnsafe(REBALANCE_IN_PROGRESS_ID);
 
   context.Rebalance.set({
     id: makeId(event),
@@ -35,6 +46,8 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
     stakedAssets,
     totalShares,
     prevRebalance_id: stats.lastRebalance_id,
+    deployedUnderlyingBefore: rebalanceInProgress.deployedUnderlyingBefore,
+    deployedUnderlyingAfter: parseUsdcAmount(event.params.deployedUnderlying),
   });
   context.Stats.set({
     ...stats,

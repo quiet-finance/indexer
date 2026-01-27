@@ -11,6 +11,11 @@ type Wallet {
   redeemRequests: [RedeemRequest!]! @derivedFrom(field: "recipient")
 }
 
+type RebalanceInProgress {
+  id: ID!
+  deployedUnderlyingBefore: BigDecimal! @config(precision: 78, scale: 18)
+}
+
 type Rebalance {
   id: ID!
   timestamp: Int! @index
@@ -18,6 +23,9 @@ type Rebalance {
   totalShares: BigDecimal! @config(precision: 78, scale: 18)
   stakedAssets: BigDecimal! @config(precision: 78, scale: 18)
   prevRebalance: Rebalance
+
+  deployedUnderlyingBefore: BigDecimal! @config(precision: 78, scale: 18)
+  deployedUnderlyingAfter: BigDecimal! @config(precision: 78, scale: 18)
 }
 
 type ShareBalanceSnapshot {
