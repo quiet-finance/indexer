@@ -28,7 +28,7 @@ const [usdcAddress, qUSDAddress, sqUSDAddress] = await multicall(client, {
     allowFailure: false
 });
 
-export const USDC = getContract({
+const USDC = getContract({
     abi: erc20Abi,
     address: usdcAddress,
     client,
@@ -37,7 +37,7 @@ const usdcDecimals = await USDC.read.decimals();
 export const parseUsdcAmount = (amount: bigint) =>
     new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(usdcDecimals));
 
-export const qUSD = getContract({
+const qUSD = getContract({
     abi: erc20Abi,
     address: qUSDAddress,
     client,
@@ -46,7 +46,7 @@ const qusdDecimals = await qUSD.read.decimals();
 export const parseQusdAmount = (amount: bigint) =>
     new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(qusdDecimals));
 
-export const sqUSD = getContract({
+const sqUSD = getContract({
     abi: [...erc4626Abi, ...erc20Abi],
     address: sqUSDAddress,
     client,
@@ -54,3 +54,9 @@ export const sqUSD = getContract({
 const squsdDecimals = await sqUSD.read.decimals();
 export const parseSqusdAmount = (amount: bigint) =>
     new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(squsdDecimals));
+
+export const tokens = {
+    USDC,
+    qUSD,
+    sqUSD,
+}

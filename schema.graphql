@@ -7,6 +7,7 @@ type Wallet {
   shareBalance: ShareBalanceSnapshot
   shareBalanceShanpshots: [ShareBalanceSnapshot!]! @derivedFrom(field: "wallet")
 
+  faucetCalls: [FaucetCall!]! @derivedFrom(field: "wallet")
   actions: [Action!]! @derivedFrom(field: "wallet")
   redeemRequests: [RedeemRequest!]! @derivedFrom(field: "recipient")
 }
@@ -93,4 +94,10 @@ type TvlSnapshot {
   id: ID!
   timestamp: Int! @index
   amount: BigDecimal! @config(precision: 78, scale: 18)
+}
+
+type FaucetCall {
+  id: ID!
+  wallet: Wallet! @index
+  timestamp: Int! @index
 }

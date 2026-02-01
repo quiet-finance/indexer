@@ -1,14 +1,15 @@
 import {
   LiquidityHub,
+  USDC,
+  QUSD,
   SqUSD,
   Router,
   BigDecimal,
+  type HandlerContext
 } from "generated";
 import { getVaultStats } from "./effects";
 import { zeroAddress } from "viem";
-import { USDC, parseQusdAmount, parseSqusdAmount, parseUsdcAmount, qUSD, sqUSD } from "./contracts";
-import type { HandlerContext } from "generated/src/Types";
-import { QUSD } from "generated";
+import { parseQusdAmount, parseSqusdAmount, parseUsdcAmount, tokens } from "./contracts";
 
 import { changeAssetBalance, changeShareBalance } from "./logic/balances";
 import { makeId } from "./logic/utils";
@@ -58,7 +59,7 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
 
 LiquidityHub.Issue.handler(async ({ event, context }) => {
   // TODO: if deposited via router, we should use correct address and correct tokenIn
-  const tokenIn = USDC.address;
+  const tokenIn = tokens.USDC.address;
 
   context.Action.set({
     id: makeId(event),
@@ -68,7 +69,7 @@ LiquidityHub.Issue.handler(async ({ event, context }) => {
     txHash: event.transaction.hash,
     tokenIn,
     amountIn: parseUsdcAmount(event.params.underlyingAmount),
-    tokenOut: qUSD.address,
+    tokenOut: tokens.qUSD.address,
     amountOut: parseQusdAmount(event.params.assetAmount),
   });
 })
@@ -80,9 +81,9 @@ LiquidityHub.InstantRedeem.handler(async ({ event, context }) => {
     actionType: "INSTANT_REDEEM",
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
-    tokenIn: qUSD.address,
+    tokenIn: tokens.qUSD.address,
     amountIn: parseQusdAmount(event.params.assetAmount),
-    tokenOut: USDC.address,
+    tokenOut: tokens.USDC.address,
     amountOut: parseUsdcAmount(event.params.underlyingAmount),
   });
 })
@@ -117,9 +118,9 @@ LiquidityHub.RedeemClaim.handler(async ({ event, context }) => {
     actionType: "REDEEM",
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
-    tokenIn: qUSD.address,
+    tokenIn: tokens.qUSD.address,
     amountIn: parseUsdcAmount(event.params.underlyingAmount),
-    tokenOut: USDC.address,
+    tokenOut: tokens.USDC.address,
     amountOut: parseUsdcAmount(event.params.underlyingAmount),
   });
   context.RedeemQueue.set({
@@ -141,6 +142,16 @@ LiquidityHub.RedeemsProcessed.handler(async ({ event, context }) => {
     processedRedeemsCount: Number(event.params.lastProcessedRedeemId)
   });
 })
+
+USDC.Transfer.handler(async ({ event, context }) => {
+  if (event.params.from === zeroAddress) {
+    context.FaucetCall.set({
+      id: makeId(event),
+      wallet_id: event.params.to,
+      timestamp: event.block.timestamp
+    });
+  }
+});
 
 SqUSD.Transfer.handler(async ({ event, context }) => {
   if (event.params.from !== zeroAddress) {
@@ -176,9 +187,9 @@ SqUSD.Deposit.handler(async ({ event, context }) => {
     actionType: "STAKE",
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
-    tokenIn: qUSD.address,
+    tokenIn: tokens.qUSD.address,
     amountIn: parseQusdAmount(event.params.assets),
-    tokenOut: sqUSD.address,
+    tokenOut: tokens.sqUSD.address,
     amountOut: parseSqusdAmount(event.params.shares),
   });
 })
@@ -190,9 +201,9 @@ SqUSD.Withdraw.handler(async ({ event, context }) => {
     actionType: "UNSTAKE",
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
-    tokenIn: sqUSD.address,
+    tokenIn: tokens.sqUSD.address,
     amountIn: parseSqusdAmount(event.params.shares),
-    tokenOut: qUSD.address,
+    tokenOut: tokens.qUSD.address,
     amountOut: parseQusdAmount(event.params.assets),
   });
 })

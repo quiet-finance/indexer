@@ -16,6 +16,12 @@ chains:
     - event: InstantRedeem(address indexed redeemer, address indexed recipient, uint256 assetAmount, uint256 underlyingAmount)
     - event: RedeemRequest(uint256 redeemId, address indexed redeemer, address indexed recipient, uint256 assetAmount)
     - event: RedeemClaim(uint256 redeemId, address indexed recipient, uint256 underlyingAmount)
+  - name: USDC
+    address:
+    - 0xf55B2Ab657147E94B228A2575483Ea3C73C88275
+    handler: src/EventHandlers.ts
+    events:
+    - event: Transfer(address indexed from, address indexed to, uint256 amount)
   - name: qUSD
     address:
     - 0xC692F4639c80293BfD3A11a6BEf2801544B0275b

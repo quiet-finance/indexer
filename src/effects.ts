@@ -1,5 +1,5 @@
 import { createEffect, S } from "envio";
-import { client, sqUSD } from "./contracts";
+import { client, tokens } from "./contracts";
 import { multicall } from "viem/actions";
 import { BigDecimal } from "generated";
 
@@ -24,8 +24,8 @@ export const getVaultStats = createEffect(
 
         const [totalAssets, totalSupply] = await multicall(client, {
             contracts: [
-                { ...sqUSD, functionName: "totalAssets" },
-                { ...sqUSD, functionName: "totalSupply" },
+                { ...tokens.sqUSD, functionName: "totalAssets" },
+                { ...tokens.sqUSD, functionName: "totalSupply" },
             ],
             blockNumber,
             allowFailure: false,
