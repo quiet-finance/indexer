@@ -2,7 +2,7 @@
 name: quiet-finance-testnet
 chains:
 - id: 11155111
-  start_block: 0
+  start_block: 1
   contracts:
   - name: LiquidityHub
     address:
