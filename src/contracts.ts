@@ -1,4 +1,4 @@
-import { BigDecimal } from "generated";
+import { indexer, BigDecimal } from "generated";
 import { createPublicClient, http, getContract, erc4626Abi, erc20Abi, parseAbi } from "viem";
 import { multicall } from "viem/actions";
 import { sepolia } from "viem/chains";
@@ -19,41 +19,33 @@ export const liquidityHub = getContract({
     client,
 });
 
-const [usdcAddress, qUSDAddress, sqUSDAddress] = await multicall(client, {
-    contracts: [
-        { ...liquidityHub, functionName: "underlying" },
-        { ...liquidityHub, functionName: "asset" },
-        { ...liquidityHub, functionName: "vault" },
-    ],
-    allowFailure: false
-});
+const usdcAddress = indexer.chains.sepolia.USDC.addresses[0]!;
+const qUSDAddress = indexer.chains.sepolia.QUSD.addresses[0]!;
+const sqUSDAddress = indexer.chains.sepolia.SQUSD.addresses[0]!;
 
 const USDC = getContract({
     abi: erc20Abi,
     address: usdcAddress,
     client,
 });
-const usdcDecimals = await USDC.read.decimals();
 export const parseUsdcAmount = (amount: bigint) =>
-    new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(usdcDecimals));
+    new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(6));
 
 const qUSD = getContract({
     abi: erc20Abi,
     address: qUSDAddress,
     client,
 });
-const qusdDecimals = await qUSD.read.decimals();
 export const parseQusdAmount = (amount: bigint) =>
-    new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(qusdDecimals));
+    new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(18));
 
 const sqUSD = getContract({
     abi: [...erc4626Abi, ...erc20Abi],
     address: sqUSDAddress,
     client,
 });
-const squsdDecimals = await sqUSD.read.decimals();
 export const parseSqusdAmount = (amount: bigint) =>
-    new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(squsdDecimals));
+    new BigDecimal(amount.toString()).div(new BigDecimal(10).pow(18));
 
 export const tokens = {
     USDC,
