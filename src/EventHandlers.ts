@@ -2,7 +2,7 @@ import {
   LiquidityHub,
   USDC,
   QUSD,
-  SqUSD,
+  SQUSD,
   Router,
   BigDecimal,
   type HandlerContext,
@@ -155,7 +155,7 @@ USDC.Transfer.handler(async ({ event, context }) => {
   }
 });
 
-SqUSD.Transfer.handler(async ({ event, context }) => {
+SQUSD.Transfer.handler(async ({ event, context }) => {
   if (event.params.from !== zeroAddress) {
     await changeShareBalance(context, event, event.params.from, parseSqusdAmount(event.params.amount).negated());
   }
@@ -182,7 +182,7 @@ QUSD.Transfer.handler(async ({ event, context }) => {
   await updateTvl(context, event, parseQusdAmount(tvlDelta));
 });
 
-SqUSD.Deposit.handler(async ({ event, context }) => {
+SQUSD.Deposit.handler(async ({ event, context }) => {
   context.Action.set({
     id: makeId(event),
     wallet_id: event.params.owner,
@@ -196,7 +196,7 @@ SqUSD.Deposit.handler(async ({ event, context }) => {
   });
 })
 
-SqUSD.Withdraw.handler(async ({ event, context }) => {
+SQUSD.Withdraw.handler(async ({ event, context }) => {
   context.Action.set({
     id: makeId(event),
     wallet_id: event.params.owner,

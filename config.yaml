@@ -22,13 +22,13 @@ chains:
     handler: src/EventHandlers.ts
     events:
     - event: Transfer(address indexed from, address indexed to, uint256 amount)
-  - name: qUSD
+  - name: QUSD
     address:
     - 0xfF04a50C7a768eBb465f0FC2B69e9C0c98272De7
     handler: src/EventHandlers.ts
     events:
     - event: Transfer(address indexed from, address indexed to, uint256 amount)
-  - name: sqUSD
+  - name: SQUSD
     address:
     - 0x0A80BdC3aAE72678B71f38EAc7e447ECd4b5c6cc
     handler: src/EventHandlers.ts
