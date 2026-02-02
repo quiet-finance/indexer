@@ -6,7 +6,7 @@ chains:
   contracts:
   - name: LiquidityHub
     address:
-    - 0x0291984a993A15dCb3dDADcE8E4B7eD83E375867
+    - 0x839aF4112B398f1ed74169959A36A8d9cC5F5476
     handler: src/EventHandlers.ts
     events:
     - event: RebalanceStarted(uint256 deployedUnderlying)
@@ -24,13 +24,13 @@ chains:
     - event: Transfer(address indexed from, address indexed to, uint256 amount)
   - name: QUSD
     address:
-    - 0xfF04a50C7a768eBb465f0FC2B69e9C0c98272De7
+    - 0xf58c3e99A217e7c70F238d1914366489Ae6B9F9F
     handler: src/EventHandlers.ts
     events:
     - event: Transfer(address indexed from, address indexed to, uint256 amount)
   - name: SQUSD
     address:
-    - 0x0A80BdC3aAE72678B71f38EAc7e447ECd4b5c6cc
+    - 0x2c41Ed6294A15F5FBC731396fAdb4723ee397f25
     handler: src/EventHandlers.ts
     events:
     - event: Transfer(address indexed from, address indexed to, uint256 amount)
@@ -38,7 +38,7 @@ chains:
     - event: Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets,uint256 shares)
   - name: Router
     address:
-    - 0x9B7E5b24f39d6AA30038Ee5a70Fc02574122Cb99
+    - 0x10c15c29Fb208047df6247514C0416C217e6F6E2
     handler: src/EventHandlers.ts
     events:
     - event: Deposit(address user, bool staked)

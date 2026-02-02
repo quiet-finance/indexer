@@ -1,5 +1,5 @@
 import { indexer, BigDecimal } from "generated";
-import { createPublicClient, http, getContract, erc4626Abi, erc20Abi, parseAbi } from "viem";
+import { createPublicClient, http, getContract, erc4626Abi, erc20Abi } from "viem";
 import { multicall } from "viem/actions";
 import { sepolia } from "viem/chains";
 
@@ -7,16 +7,6 @@ export const client = createPublicClient({
     chain: sepolia,
     batch: { multicall: true },
     transport: http(undefined, { batch: true }),
-});
-
-export const liquidityHub = getContract({
-    abi: parseAbi([
-        "function underlying() external view returns (address)",
-        "function asset() external view returns (address)",
-        "function vault() external view returns (address)",
-    ]),
-    address: "0x0291984a993A15dCb3dDADcE8E4B7eD83E375867",
-    client,
 });
 
 const usdcAddress = indexer.chains.sepolia.USDC.addresses[0]!;
