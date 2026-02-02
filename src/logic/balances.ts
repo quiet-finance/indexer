@@ -2,10 +2,9 @@ import { BigDecimal, type EventLog, type HandlerContext } from "generated";
 import type { Address } from "viem";
 import { makeId } from "./utils";
 
-const DECIMALS_18 = new BigDecimal(10).pow(18);
 const MIN_HOLD_FOR_STREAK = new BigDecimal(0);
 
-const getOrCreateWallet = async (context: HandlerContext, address: Address) => {
+export const getOrCreateWallet = async (context: HandlerContext, address: Address) => {
     return context.Wallet.getOrCreate({
         id: address,
         assetBalance_id: undefined,
@@ -21,7 +20,7 @@ export const changeShareBalance = async (
 ) => {
     const wallet = await getOrCreateWallet(context, address);
 
-    let amount: BigDecimal = delta;
+    let amount = delta;
     let holdingStreak: number = 0;
     if (wallet.shareBalance_id !== undefined) {
         const shareBalance = await context.ShareBalanceSnapshot.getOrThrow(wallet.shareBalance_id);
@@ -40,17 +39,19 @@ export const changeShareBalance = async (
         holdingStreak,
     });
     context.Wallet.set({ ...wallet, shareBalance_id });
+
+    return shareBalance_id;
 }
 
 export const changeAssetBalance = async (
     context: HandlerContext,
     event: EventLog<{}>,
     address: Address,
-    delta: bigint,
+    delta: BigDecimal,
 ) => {
     const wallet = await getOrCreateWallet(context, address);
 
-    let amount: BigDecimal = new BigDecimal(delta.toString()).div(DECIMALS_18)
+    let amount = delta;
     let holdingStreak: number = 0;
     if (wallet.assetBalance_id !== undefined) {
         const assetBalance = await context.AssetBalanceSnapshot.getOrThrow(wallet.assetBalance_id);
@@ -69,4 +70,6 @@ export const changeAssetBalance = async (
         holdingStreak,
     });
     context.Wallet.set({ ...wallet, assetBalance_id });
+
+    return assetBalance_id;
 }

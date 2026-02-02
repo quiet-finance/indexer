@@ -5,13 +5,13 @@ import {
   SqUSD,
   Router,
   BigDecimal,
-  type HandlerContext
+  type HandlerContext,
 } from "generated";
 import { getVaultStats } from "./effects";
 import { zeroAddress } from "viem";
 import { parseQusdAmount, parseSqusdAmount, parseUsdcAmount, tokens } from "./contracts";
 
-import { changeAssetBalance, changeShareBalance } from "./logic/balances";
+import { changeAssetBalance, changeShareBalance, getOrCreateWallet } from "./logic/balances";
 import { makeId } from "./logic/utils";
 import { getOrCreateStats, updateTvl } from "./logic/stats";
 
@@ -112,6 +112,7 @@ LiquidityHub.RedeemClaim.handler(async ({ event, context }) => {
   const redeemQueue = await getOrCreateRedeemQueue(context);
   const redeemRequest = await context.RedeemRequest.getOrThrow(`${event.params.redeemId}`)
 
+  await getOrCreateWallet(context, event.params.recipient);
   context.Action.set({
     id: makeId(event),
     wallet_id: event.params.recipient,
@@ -145,6 +146,7 @@ LiquidityHub.RedeemsProcessed.handler(async ({ event, context }) => {
 
 USDC.Transfer.handler(async ({ event, context }) => {
   if (event.params.from === zeroAddress) {
+    await getOrCreateWallet(context, event.params.to);
     context.FaucetCall.set({
       id: makeId(event),
       wallet_id: event.params.to,
@@ -166,13 +168,13 @@ QUSD.Transfer.handler(async ({ event, context }) => {
   let tvlDelta = 0n;
 
   if (event.params.from !== zeroAddress) {
-    await changeAssetBalance(context, event, event.params.from, -event.params.amount);
+    await changeAssetBalance(context, event, event.params.from, parseQusdAmount(event.params.amount).negated());
   } else {
     tvlDelta += event.params.amount;
   }
 
   if (event.params.to !== zeroAddress) {
-    await changeAssetBalance(context, event, event.params.to, event.params.amount);
+    await changeAssetBalance(context, event, event.params.to, parseQusdAmount(event.params.amount));
   } else {
     tvlDelta -= event.params.amount;
   }
