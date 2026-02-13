@@ -87,12 +87,26 @@ type RedeemRequest {
 type Stats {
   id: ID!
   tvl: TvlSnapshot
+  uniqueWallets: UniqueWalletsSnapshot
+  earnings: EarningsSnapshot
   lastRebalance: Rebalance
 }
 
 type TvlSnapshot {
   id: ID!
-  timestamp: Int! @index
+  dt: Int! @index
+  amount: BigDecimal! @config(precision: 78, scale: 18)
+}
+
+type UniqueWalletsSnapshot {
+  id: ID!
+  dt: Int! @index
+  amount: Int!
+}
+
+type EarningsSnapshot {
+  id: ID!
+  dt: Int! @index
   amount: BigDecimal! @config(precision: 78, scale: 18)
 }
 

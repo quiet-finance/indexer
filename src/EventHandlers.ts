@@ -13,7 +13,7 @@ import { parseQusdAmount, parseSqusdAmount, parseUsdcAmount, tokens } from "./co
 
 import { changeAssetBalance, changeShareBalance, getOrCreateWallet } from "./logic/balances";
 import { makeId } from "./logic/utils";
-import { getOrCreateStats, updateTvl } from "./logic/stats";
+import { getOrCreateStats, updateEarnings, updateTvl } from "./logic/stats";
 
 const REDEEM_QUEUE_ID = "REDEEM_QUEUE_ID"
 const getOrCreateRedeemQueue = async (context: HandlerContext) => await context.RedeemQueue.getOrCreate({
@@ -54,7 +54,9 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
     ...stats,
     lastRebalance_id: makeId(event),
   });
-  return;
+
+  const earningsDelta = parseUsdcAmount(event.params.deployedUnderlying).minus(rebalanceInProgress.deployedUnderlyingBefore)
+  await updateEarnings(context, event, earningsDelta);
 });
 
 LiquidityHub.Issue.handler(async ({ event, context }) => {
@@ -112,7 +114,7 @@ LiquidityHub.RedeemClaim.handler(async ({ event, context }) => {
   const redeemQueue = await getOrCreateRedeemQueue(context);
   const redeemRequest = await context.RedeemRequest.getOrThrow(`${event.params.redeemId}`)
 
-  await getOrCreateWallet(context, event.params.recipient);
+  await getOrCreateWallet(context, event, event.params.recipient);
   context.Action.set({
     id: makeId(event),
     wallet_id: event.params.recipient,
@@ -146,7 +148,7 @@ LiquidityHub.RedeemsProcessed.handler(async ({ event, context }) => {
 
 USDC.Transfer.handler(async ({ event, context }) => {
   if (event.params.from === zeroAddress) {
-    await getOrCreateWallet(context, event.params.to);
+    await getOrCreateWallet(context, event, event.params.to);
     context.FaucetCall.set({
       id: makeId(event),
       wallet_id: event.params.to,
