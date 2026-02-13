@@ -1,12 +1,11 @@
 import { indexer, BigDecimal } from "generated";
 import { createPublicClient, http, getContract, erc4626Abi, erc20Abi } from "viem";
-import { multicall } from "viem/actions";
 import { sepolia } from "viem/chains";
 
 export const client = createPublicClient({
     chain: sepolia,
     batch: { multicall: true },
-    transport: http(undefined, { batch: true }),
+    transport: http(process.env.ENVIO_RPC_URL, { batch: true }),
 });
 
 const usdcAddress = indexer.chains.sepolia.USDC.addresses[0]!;
