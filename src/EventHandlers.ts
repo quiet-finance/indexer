@@ -42,6 +42,9 @@ LiquidityHub.RebalanceFinished.handler(async ({ event, context }) => {
 
   context.Rebalance.set({
     id: makeId(event),
+    idx: stats.lastRebalance_id !== undefined ?
+      (await context.Rebalance.getOrThrow(stats.lastRebalance_id)).idx + 1
+      : 0,
     timestamp: event.block.timestamp,
     txHash: event.transaction.hash,
     stakedAssets,
@@ -63,8 +66,10 @@ LiquidityHub.Issue.handler(async ({ event, context }) => {
   // TODO: if deposited via router, we should use correct address and correct tokenIn
   const tokenIn = tokens.USDC.address;
 
+  const stats = await getOrCreateStats(context);
   context.Action.set({
     id: makeId(event),
+    idx: stats.totalActions,
     wallet_id: event.params.recipient,
     actionType: "ISSUE",
     timestamp: event.block.timestamp,
@@ -74,11 +79,17 @@ LiquidityHub.Issue.handler(async ({ event, context }) => {
     tokenOut: tokens.qUSD.address,
     amountOut: parseQusdAmount(event.params.assetAmount),
   });
+  context.Stats.set({
+    ...stats,
+    totalActions: stats.totalActions + 1
+  })
 })
 
 LiquidityHub.InstantRedeem.handler(async ({ event, context }) => {
+  const stats = await getOrCreateStats(context);
   context.Action.set({
     id: makeId(event),
+    idx: stats.totalActions,
     wallet_id: event.params.recipient,
     actionType: "INSTANT_REDEEM",
     timestamp: event.block.timestamp,
@@ -88,6 +99,10 @@ LiquidityHub.InstantRedeem.handler(async ({ event, context }) => {
     tokenOut: tokens.USDC.address,
     amountOut: parseUsdcAmount(event.params.underlyingAmount),
   });
+  context.Stats.set({
+    ...stats,
+    totalActions: stats.totalActions + 1
+  })
 })
 
 LiquidityHub.RedeemRequest.handler(async ({ event, context }) => {
@@ -111,12 +126,14 @@ LiquidityHub.RedeemRequest.handler(async ({ event, context }) => {
 
 
 LiquidityHub.RedeemClaim.handler(async ({ event, context }) => {
+  const stats = await getOrCreateStats(context);
   const redeemQueue = await getOrCreateRedeemQueue(context);
   const redeemRequest = await context.RedeemRequest.getOrThrow(`${event.params.redeemId}`)
 
   await getOrCreateWallet(context, event, event.params.recipient);
   context.Action.set({
     id: makeId(event),
+    idx: stats.totalActions,
     wallet_id: event.params.recipient,
     actionType: "REDEEM",
     timestamp: event.block.timestamp,
@@ -135,6 +152,10 @@ LiquidityHub.RedeemClaim.handler(async ({ event, context }) => {
     ...redeemRequest,
     isClaimed: true,
   })
+  context.Stats.set({
+    ...stats,
+    totalActions: stats.totalActions + 1
+  });
 })
 
 LiquidityHub.RedeemsProcessed.handler(async ({ event, context }) => {
@@ -185,8 +206,10 @@ QUSD.Transfer.handler(async ({ event, context }) => {
 });
 
 SQUSD.Deposit.handler(async ({ event, context }) => {
+  const stats = await getOrCreateStats(context);
   context.Action.set({
     id: makeId(event),
+    idx: stats.totalActions,
     wallet_id: event.params.owner,
     actionType: "STAKE",
     timestamp: event.block.timestamp,
@@ -196,11 +219,17 @@ SQUSD.Deposit.handler(async ({ event, context }) => {
     tokenOut: tokens.sqUSD.address,
     amountOut: parseSqusdAmount(event.params.shares),
   });
+  context.Stats.set({
+    ...stats,
+    totalActions: stats.totalActions + 1
+  })
 })
 
 SQUSD.Withdraw.handler(async ({ event, context }) => {
+  const stats = await getOrCreateStats(context);
   context.Action.set({
     id: makeId(event),
+    idx: stats.totalActions,
     wallet_id: event.params.owner,
     actionType: "UNSTAKE",
     timestamp: event.block.timestamp,
@@ -210,6 +239,10 @@ SQUSD.Withdraw.handler(async ({ event, context }) => {
     tokenOut: tokens.qUSD.address,
     amountOut: parseQusdAmount(event.params.assets),
   });
+  context.Stats.set({
+    ...stats,
+    totalActions: stats.totalActions + 1
+  })
 })
 
 Router.Deposit.handler(async ({ event, context }) => {

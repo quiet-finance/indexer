@@ -1,5 +1,6 @@
 type Wallet {
   id: ID!
+  idx: Int! @index
 
   assetBalance: AssetBalanceSnapshot
   assetBalanceShanpshots: [AssetBalanceSnapshot!]! @derivedFrom(field: "wallet")
@@ -19,6 +20,8 @@ type RebalanceInProgress {
 
 type Rebalance {
   id: ID!
+  idx: Int! @index
+
   timestamp: Int! @index
   txHash: String!
   totalShares: BigDecimal! @config(precision: 78, scale: 18)
@@ -31,6 +34,8 @@ type Rebalance {
 
 type ShareBalanceSnapshot {
   id: ID!
+  idx: Int! @index
+
   timestamp: Int! @index
   wallet: Wallet! @index
   amount: BigDecimal! @config(precision: 78, scale: 18)
@@ -39,6 +44,8 @@ type ShareBalanceSnapshot {
 
 type AssetBalanceSnapshot {
   id: ID!
+  idx: Int! @index
+
   timestamp: Int! @index
   wallet: Wallet! @index
   amount: BigDecimal! @config(precision: 78, scale: 18)
@@ -55,6 +62,8 @@ enum ActionType {
 
 type Action {
   id: ID!
+  idx: Int! @index
+
   wallet: Wallet! @index
   actionType: ActionType!
   timestamp: Int!
@@ -90,6 +99,7 @@ type Stats {
   uniqueWallets: UniqueWalletsSnapshot
   earnings: EarningsSnapshot
   lastRebalance: Rebalance
+  totalActions: Int!
 }
 
 type TvlSnapshot {

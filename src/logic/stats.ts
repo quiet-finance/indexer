@@ -14,6 +14,7 @@ export const getOrCreateStats = async (context: HandlerContext) => {
         earnings_id: undefined,
         uniqueWallets_id: undefined,
         lastRebalance_id: undefined,
+        totalActions: 0,
     })
 }
 
